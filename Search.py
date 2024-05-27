@@ -44,16 +44,21 @@ class InterpolationSearch:
 
     def interpolation_search(self, arr, low, high, x):
         if low <= high:
-            pos = low + int((float(high - low) / (hash(arr[high].name) - hash(arr[low].name))) * (hash(x) - hash(arr[low].name)))
+            if hash(arr[high].name) - hash(arr[low].name) != 0:
+                pos = low + int((float(high - low) / (hash(arr[high].name) - hash(arr[low].name))) * (
+                            hash(x) - hash(arr[low].name)))
 
-            if hash(arr[pos].name) == hash(x):
-                return pos
+                if hash(arr[pos].name) == hash(x):
+                    return pos
 
-            elif hash(arr[pos].name) < hash(x):
-                return self.interpolation_search(arr, pos + 1, high, x)
+                elif hash(arr[pos].name) < hash(x):
+                    return self.interpolation_search(arr, pos + 1, high, x)
+
+                else:
+                    return self.interpolation_search(arr, low, pos - 1, x)
 
             else:
-                return self.interpolation_search(arr, low, pos - 1, x)
+                return -1
 
         else:
             return -1
