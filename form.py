@@ -4,7 +4,7 @@ from Shop import Shop
 from CTkTable import *
 
 
-class Sort:
+class Form:
 
     def __init__(self):
         self.app = ctk.CTk()
@@ -18,8 +18,16 @@ class Sort:
 
         self.table_frame = ctk.CTkScrollableFrame(self.app, height=400, width=600, bg_color="#1F1F1F", fg_color="#1F1F1F")
         self.table_frame.place(relx=0.85, rely=0.05, anchor="ne")
-        from data import data
-        self.table = self.display_data_in_table(data, self.table_frame)
+        self.sorting_method_select = ctk.CTkComboBox(self.app)
+
+        self.search_input = ctk.CTkEntry(self.app)
+        from data import Data
+        self.data = Data()
+        try:
+            self.data.load_data()
+        except Exception:
+            print("Exception")
+        self.table = self.display_data_in_table(self.data.data_list)
         self.table.pack(padx=20, pady=20, expand=True, fill="both")
         self.selected_row_index = 1
         self.run()
@@ -52,29 +60,54 @@ class Sort:
                                       command=self.delete_row)
         delete_button.place(relx=0.55, rely=0.7, anchor="nw")
 
-        combo_box_options = ["Bubble", "Shaker"]
-        sorting_method_select = ctk.CTkComboBox(self.app, width=150, height=30, bg_color="#1F1F1F", fg_color="#FA7328",
+        refresh_button = ctk.CTkButton(self.input_frame, width=80, height=40, text="Refresh", text_color="#2F2F2F",
+                                      font=("Arial", 14), bg_color="#2F2F2F", fg_color="#FA7328", corner_radius=45,
+                                      command= lambda: self.refresh(self.data.data_list))
+        refresh_button.place(relx=0.75, rely=0.7, anchor="nw")
+
+        combo_box_options = ["Bubble", "Shaker", "Insertion", "Selection", "Shell (Sedgewick)", "Shell (Knuth)", "Quick sort", "Heap (1)", "Heap (2)"]
+        self.sorting_method_select = ctk.CTkComboBox(self.app, width=150, height=30, bg_color="#1F1F1F", fg_color="#FA7328",
                                                 text_color="#1F1F1F", corner_radius=45, values=combo_box_options)
-        sorting_method_select.place(relx=0.6, rely=0.6, anchor="e")
+        self.sorting_method_select.place(relx=0.6, rely=0.6, anchor="e")
 
         sort_button = ctk.CTkButton(self.app, width=100, height=40, bg_color="#1F1F1F", fg_color="#FA7328",
-                                    text_color="#1F1F1F", corner_radius=45, font=("Arial", 14), text="Sort")
+                                    text_color="#1F1F1F", corner_radius=45, font=("Arial", 14), text="Sort", command=self.sort_ocl)
         sort_button.place(relx=0.7, rely=0.6, anchor="e")
 
-    def display_data_in_table(self, data, root):
+
+        self.search_input = ctk.CTkEntry(self.app, width=400, bg_color="#2F2F2F", fg_color="#4F4F4F", height=30,
+                                     corner_radius=45, placeholder_text="Enter an overall sold value for search")
+        self.search_input.place(relx=0.1, rely=0.6, anchor="w")
+
+        search_combo_box = ctk.CTkComboBox(self.app, width=150, height=30, bg_color="#1F1F1F", fg_color="#FA7328",
+                                                text_color="#1F1F1F", corner_radius=45, values=['Binary'])
+        search_combo_box.place(relx=0.1, rely=0.7, anchor="w")
+
+        search_button = ctk.CTkButton(self.app, width=100, height=40, bg_color="#1F1F1F", fg_color="#FA7328",
+                                    text_color="#1F1F1F", corner_radius=45, font=("Arial", 14), text="Search", command=self.search_ocl)
+        search_button.place(relx=0.3, rely=0.7, anchor="w")
+
+
+    def display_data_in_table(self, list):
         # Create the table
-        table = CTkTable(master=root, column=2, colors=["#1F1F1F", "#2F2F2F"], header_color="#FA7328",
+        table = CTkTable(master=self.table_frame, column=2, colors=["#1F1F1F", "#2F2F2F"], header_color="#FA7328",
                          command=self.row_on_click)
         table.insert(row=0, column=0, value="Name")
         table.insert(row=0, column=1, value="Overall sold")
         # Insert the data into the table
         row_index = 1
 
-        for obj in data:
+        for obj in list:
             table.add_row(index=row_index, values=[obj.name, obj.overall_sold])
             row_index += 1
 
         return table
+
+    def refresh(self, list):
+        self.data.load_data()
+        self.table.destroy()
+        self.table = self.display_data_in_table(list)
+        self.table.pack(expand=True, fill="both")
 
     def clear_text_boxes(self):
         self.name_text_box.delete(0, 'end')
@@ -82,10 +115,10 @@ class Sort:
 
     def submit(self):
         obj = Shop(self.name_text_box.get(), self.total_sold_box.get())
-        from data import data
-        data.append(obj)
+        self.data.data_list.append(obj)
+        self.data.save_data()
         self.table.destroy()
-        self.table = self.display_data_in_table(data, self.table_frame)
+        self.table = self.display_data_in_table(self.data.data_list)
         self.table.pack(expand=True, fill="both")
 
     def row_on_click(self, cell):
@@ -102,8 +135,58 @@ class Sort:
         self.total_sold_box.insert(0, total_sold)
 
     def delete_row(self):
-        from data import data
-        data.__delitem__(self.selected_row_index-1)
+        self.data.data_list.__delitem__(self.selected_row_index-1)
         self.table.delete_row(self.selected_row_index)
         self.selected_row_index = 1
         print("Deleted")
+
+    def sort_ocl(self):
+        method = self.sorting_method_select.get()
+        if method.__eq__("Bubble"):
+            from Sorting import BubbleSort as Bs
+            bs = Bs()
+            self.data.data_list = bs.sort()
+        if method.__eq__("Shaker"):
+            from Sorting import ShakerSort as Ss
+            ss = Ss()
+            self.data.data_list = ss.sort()
+        if method.__eq__("Insertion"):
+            from Sorting import InsertionSort
+            insertion_sort = InsertionSort()
+            self.data.data_list = insertion_sort.sort()
+        if method.__eq__("Selection"):
+            from Sorting import SelectionSort
+            selection_sort = SelectionSort()
+            self.data.data_list = selection_sort.sort()
+        if method.__eq__("Shell (Sedgewick)"):
+            from Sorting import ShellSort
+            shell_sort = ShellSort()
+            self.data.data_list = shell_sort.sort(gap_sequence="sedgewick")
+        if method.__eq__("Shell (Knuth)"):
+            from Sorting import ShellSort
+            shell_sort = ShellSort()
+            self.data.data_list = shell_sort.sort(gap_sequence="knuth")
+        if method.__eq__("Quick sort"):
+            from Sorting import QuickSort
+            quick_sort = QuickSort()
+            self.data.data_list = quick_sort.sort()
+        if method.__eq__("Heap (1)"):
+            from Sorting import HeapSortWithFormula1
+            heap_sort = HeapSortWithFormula1()
+            self.data.data_list = heap_sort.sort()
+        if method.__eq__("Heap (2)"):
+            from Sorting import HeapSortWithFormula2
+            heap_sort = HeapSortWithFormula2()
+            self.data.data_list = heap_sort.sort()
+
+        self.table.destroy()
+        self.table = self.display_data_in_table(self.data.data_list)
+        self.table.pack(expand=True, fill="both")
+
+    def search_ocl(self):
+        from Search import BinarySearch
+        search = BinarySearch(self.data.data_list, 0, len(self.data.data_list)-1, self.search_input.get())
+        result_index = search.search()
+        list = [self.data.data_list[result_index]]
+        print(self.data.data_list)
+        self.refresh(list)
