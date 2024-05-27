@@ -21,6 +21,7 @@ class Form:
         self.sorting_method_select = ctk.CTkComboBox(self.app)
 
         self.search_input = ctk.CTkEntry(self.app)
+        self.search_combo_box = ctk.CTkComboBox(self.app)
         from data import Data
         self.data = Data()
         try:
@@ -79,9 +80,9 @@ class Form:
                                      corner_radius=45, placeholder_text="Enter an overall sold value for search")
         self.search_input.place(relx=0.1, rely=0.6, anchor="w")
 
-        search_combo_box = ctk.CTkComboBox(self.app, width=150, height=30, bg_color="#1F1F1F", fg_color="#FA7328",
-                                                text_color="#1F1F1F", corner_radius=45, values=['Binary'])
-        search_combo_box.place(relx=0.1, rely=0.7, anchor="w")
+        self.search_combo_box = ctk.CTkComboBox(self.app, width=150, height=30, bg_color="#1F1F1F", fg_color="#FA7328",
+                                                text_color="#1F1F1F", corner_radius=45, values=['Binary', 'Interpolation'])
+        self.search_combo_box.place(relx=0.1, rely=0.7, anchor="w")
 
         search_button = ctk.CTkButton(self.app, width=100, height=40, bg_color="#1F1F1F", fg_color="#FA7328",
                                     text_color="#1F1F1F", corner_radius=45, font=("Arial", 14), text="Search", command=self.search_ocl)
@@ -184,9 +185,22 @@ class Form:
         self.table.pack(expand=True, fill="both")
 
     def search_ocl(self):
-        from Search import BinarySearch
-        search = BinarySearch(self.data.data_list, 0, len(self.data.data_list)-1, self.search_input.get())
-        result_index = search.search()
-        list = [self.data.data_list[result_index]]
-        print(self.data.data_list)
-        self.refresh(list)
+        match self.search_combo_box.get():
+            case 'Binary':
+                from Search import BinarySearch
+                search = BinarySearch(self.data.data_list, 0, len(self.data.data_list)-1, self.search_input.get())
+                result_index = search.search()
+                list = [self.data.data_list[result_index]]
+                print(self.data.data_list)
+                self.refresh(list)
+            case 'Interpolation':
+                from Search import InterpolationSearch
+                search = InterpolationSearch(self.data.data_list, 0, len(self.data.data_list) - 1,
+                                             self.search_input.get())
+                result_index = search.search()
+                if result_index != -1:
+                    list = [self.data.data_list[result_index]]
+                    print(self.data.data_list)
+                    self.refresh(list)
+                else:
+                    print("Element not found")
