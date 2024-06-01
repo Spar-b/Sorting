@@ -190,17 +190,27 @@ class Form:
                 from Search import BinarySearch
                 search = BinarySearch(self.data.data_list, 0, len(self.data.data_list)-1, self.search_input.get())
                 result_index = search.search()
-                list = [self.data.data_list[result_index]]
+                result_objects = [self.data.data_list[result_index]]
                 print(self.data.data_list)
-                self.refresh(list)
+                self.refresh(result_objects)
             case 'Interpolation':
                 from Search import InterpolationSearch
                 search = InterpolationSearch(self.data.data_list, 0, len(self.data.data_list) - 1,
                                              self.search_input.get())
-                result_index = search.search()
-                if result_index != -1:
-                    list = [self.data.data_list[result_index]]
-                    print(self.data.data_list)
-                    self.refresh(list)
-                else:
-                    print("Element not found")
+                result_indices = []
+                search_result = search.search()
+                print(search_result)
+                for item in search_result:
+                    result_indices.append(item)
+                result_objects = []
+
+                print(f"Result_indices: {result_indices}")
+
+                if len(result_indices) == 0:
+                    print("Elements not found")
+                    return
+
+                for index in result_indices:
+                    result_objects.append(self.data.data_list[index])
+
+                self.refresh(result_objects)
