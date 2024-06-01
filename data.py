@@ -1,10 +1,11 @@
 from Shop import Shop
+from CustomList import CustomList
 import json
 
 
 class Data:
     def __init__(self):
-        self.data_list = list()
+        self.data_list = CustomList()
         obj = Shop("Test", 10000)
         self.data_list.append(obj)
 
@@ -16,7 +17,7 @@ class Data:
         try:
             with open('data.json', 'r') as file:
                 data = json.load(file)
-                self.data_list = list()
+                self.data_list = CustomList()
                 for item in data:
                     obj = Shop(item['name'], item['overall_sold'])
                     self.data_list.append(obj)

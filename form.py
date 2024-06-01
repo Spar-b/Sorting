@@ -136,7 +136,7 @@ class Form:
         self.total_sold_box.insert(0, total_sold)
 
     def delete_row(self):
-        self.data.data_list.__delitem__(self.selected_row_index-1)
+        self.data.data_list.pop(self.selected_row_index-1)
         self.table.delete_row(self.selected_row_index)
         self.selected_row_index = 1
         print("Deleted")
